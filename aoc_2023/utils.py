@@ -12,3 +12,7 @@ def get_day_and_input(f):
 
 def by_line(s):
     return s.strip().split("\n")
+
+
+def by_double_line(s):
+    return s.strip().split("\n\n")
