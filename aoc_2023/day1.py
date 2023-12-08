@@ -1,4 +1,6 @@
+import polars as pl
 from loguru import logger
+from polars import DataFrame
 
 from aoc_2023.utils import by_line, get_day_and_input
 
@@ -30,6 +32,22 @@ def part_1(data):
                 break
         count += int(code)
     return count
+
+
+def part_1_polars(data):
+    return (
+        DataFrame(pl.Series("line", by_line(data)))
+        .with_columns(
+            pl.col("line")
+            .str.split("")
+            .list.eval(pl.element().cast(pl.Int8, strict=False))
+            .list.drop_nulls()
+            .alias("numbers")
+        )
+        .with_columns(((pl.col("numbers").list.first() * 10) + pl.col("numbers").list.last()).alias("code"))
+        .select(pl.col("code").sum())
+        .row(0)[0]
+    )
 
 
 def part_2(data):
@@ -81,7 +99,7 @@ def run():
     d, f = get_day_and_input(__file__)
 
     logger.info(f"Starting Day {d}")
-    part1 = part_1(f)
+    part1 = part_1_polars(f)
     logger.info(f"Part 1: {part1}")
 
     part2 = part_2(f)
@@ -94,7 +112,7 @@ def test_part_1():
     a1b2c3d4e5f
     treb7uchet"""
 
-    assert part_1(s) == 142
+    assert part_1_polars(s) == 142
 
 
 def test_part_2():
